@@ -39,7 +39,15 @@ export function IssueItem({
           {createdByUser.isSuccess ? `by ${createdByUser.data.name}` : ""}
         </small>
       </div>
-      {assignee ? <div>{assignee}</div> : null}
+      {assignee ? (
+        <img
+          src={asigneeUser.isSuccess ? asigneeUser.data.profilePictureUrl : ""}
+          className="assigned-to"
+          alt={`assigned-to ${
+            asigneeUser.isSuccess ? asigneeUser.data.name : ""
+          }`}
+        />
+      ) : null}
       <span className="comment-count">
         {commentCount > 0 ? (
           <>
