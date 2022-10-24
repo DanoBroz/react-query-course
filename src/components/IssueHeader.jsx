@@ -1,14 +1,8 @@
-import { useQuery } from "react-query";
 import { GoIssueOpened, GoIssueClosed } from "react-icons/go";
 import { possibleStatus } from "./StatusSelect";
-import { useUserData } from "../../hooks/useUserData";
+import { useUserData } from "../hooks/useUserData";
 import { relativeDate } from "../helpers/relativeDate";
 
-export function useIssueData(issueNumber) {
-  return useQuery(["issues", issueNumber], () => {
-    return fetch(`/api/issues/${issueNumber}`).then((res) => res.json());
-  });
-}
 export const IssueHeader = ({
   title,
   number,
