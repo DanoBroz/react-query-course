@@ -1,4 +1,4 @@
-const possibleStatus = [
+export const possibleStatus = [
   {
     id: "backlog",
     label: "Backlog",
