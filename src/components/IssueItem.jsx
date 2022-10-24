@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { GoIssueOpened, GoIssueClosed, GoComment } from "react-icons/go";
 import { relativeDate } from "../helpers/relativeDate";
-import { useUserData } from "../../hooks/useUserData";
+import { useUserData } from "../hooks/useUserData";
 import { Label } from "./Label";
 
 export function IssueItem({
