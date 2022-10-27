@@ -7,8 +7,9 @@ export default function IssueAssignment({ assignee, issueNumber }) {
   const user = useUserData(assignee);
   const queryClient = useQueryClient();
   const [menuOpen, setMenuOpen] = useState(false);
-  const usersQuery = useQuery(["users"], () =>
-    fetch("/api/users").then((res) => res.json())
+  const usersQuery = useQuery(
+    ["users"],
+    async () => await fetch("/api/users").then((res) => res.json())
   );
 
   const setAssignment = useMutation(
@@ -52,7 +53,7 @@ export default function IssueAssignment({ assignee, issueNumber }) {
         <span>Assignment</span>
         {user.isSuccess && (
           <div>
-            <img src={user.data.profilePicture} />
+            <img src={user.data.profilePictureUrl} />
             {user.data.name}
           </div>
         )}
@@ -66,7 +67,7 @@ export default function IssueAssignment({ assignee, issueNumber }) {
         <div className="picker-menu">
           {usersQuery.data?.map((user) => (
             <div key={user.id} onClick={() => setAssignment.mutate(user.id)}>
-              <img src={user.profilePicture} alt="users profile picture" />
+              <img src={user.profilePictureUrl} alt="users profile picture" />
               {user.name}
             </div>
           ))}
