@@ -1,26 +1,42 @@
-import { useQuery } from "react-query";
+import { useInfiniteQuery, useQuery } from "react-query";
 import { useParams } from "react-router-dom";
 import { relativeDate } from "../helpers/relativeDate";
+import useScrollToBottomAction from "../hooks/useScrollToBottomAction";
 import { useUserData } from "../hooks/useUserData";
 import IssueAssignment from "./IssueAssignment";
 import { IssueHeader } from "./IssueHeader";
 import IssueLabels from "./IssueLabels";
 import IssueStatus from "./IssueStatus";
+import Loader from "./Loader";
 
 function useIssueData(issueNumber) {
-  return useQuery(["issues", issueNumber], ({ signal }) => {
-    return fetch(`/api/issues/${issueNumber}`, { signal }).then((res) =>
-      res.json()
-    );
+  return useQuery(["issues", issueNumber], async ({ signal }) => {
+    const res = await fetch(`/api/issues/${issueNumber.toString()}`, {
+      signal,
+    });
+    return await res.json();
   });
 }
 
 function useIssueComments(issueNumber) {
-  return useQuery(["issues", issueNumber, "comments"], ({ signal }) => {
-    return fetch(`/api/issues/${issueNumber}/comments`, { signal }).then(
-      (res) => res.json()
-    );
-  });
+  return useInfiniteQuery(
+    ["issues", issueNumber, "comments"],
+    async ({ signal, pageParam = 1 }) => {
+      const res = await fetch(
+        `/api/issues/${issueNumber.toString()}/comments?page=${pageParam}`,
+        {
+          signal,
+        }
+      );
+      return await res.json();
+    },
+    {
+      getNextPageParam: (lastPage, pages) => {
+        if (lastPage.length === 0) return;
+        return pages.length + 1;
+      },
+    }
+  );
 }
 
 function Comment({ comment, createdBy, createdDate }) {
@@ -37,10 +53,10 @@ function Comment({ comment, createdBy, createdDate }) {
 
   return (
     <div className="comment">
-      <img src={userQuery.data.profilePictureUrl} alt="Commenter Avatar" />
+      <img src={userQuery.data?.profilePictureUrl} alt="Commenter Avatar" />
       <div>
         <div className="comment-header">
-          <span>{userQuery.data.name}</span> commented{" "}
+          <span>{userQuery.data?.name}</span> commented{" "}
           <span>{relativeDate(createdDate)}</span>
         </div>
         <div className="comment-body">{comment}</div>
@@ -53,6 +69,8 @@ export default function IssueDetails() {
   const { number } = useParams();
   const issueQuery = useIssueData(number);
   const commentsQuery = useIssueComments(number);
+
+  useScrollToBottomAction(document, commentsQuery.fetchNextPage, 100);
 
   return (
     <div className="issue-details">
@@ -67,10 +85,13 @@ export default function IssueDetails() {
               {commentsQuery.isLoading ? (
                 <p>Loading...</p>
               ) : (
-                commentsQuery.data?.map((comment) => (
-                  <Comment key={comment.id} {...comment} />
-                ))
+                commentsQuery.data?.pages.map((commentPage) =>
+                  commentPage.map((comment) => (
+                    <Comment key={comment.id} {...comment} />
+                  ))
+                )
               )}
+              {commentsQuery.isFetchingNextPage && <Loader />}
             </section>
             <aside>
               <IssueStatus
